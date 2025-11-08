@@ -39,17 +39,56 @@
         p{color:#888;max-width:700px;margin-bottom:1.5rem;font-size:1.1rem;line-height:1.7}
         button{padding:.9rem 2.4rem;border:2px solid var(--accent);background:transparent;border-radius:50px;color:var(--accent);font-weight:600;cursor:pointer;transition:all .4s}
         button:hover{background:var(--accent);color:#000;box-shadow:var(--glow);transform:translateY(-3px)}
-        .input-group{position:relative;margin:.6rem 0}
-        input{padding:.9rem 1.2rem .9rem 2.8rem;width:100%;max-width:420px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.15);color:var(--text);border-radius:12px;outline:none;transition:all .3s;font-size:1rem}
-        input:focus{border-color:var(--accent);box-shadow:var(--glow)}
-        .input-icon{position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:1.2rem;transition:all .3s}
-        .input-icon.valid{color:var(--success);opacity:1}
-        .input-icon.invalid{color:var(--error);opacity:1}
-        .input-icon.default{color:#666;opacity:0.6}
-        .error{color:var(--error);font-size:0.85rem;margin-top:4px;text-align:left;min-height:1.2em;display:flex;align-items:center;gap:4px}
-        .error::before{content:"cross";font-weight:bold}
-        .success{color:var(--success);font-size:0.85rem;margin-top:4px;text-align:left;min-height:1.2em;display:flex;align-items:center;gap:4px}
-        .success::before{content:"checkmark";font-weight:bold}
+
+        /* INPUTS GÉNÉRAUX - ICÔNES À DROITE */
+        .input-group {
+            position: relative;
+            margin: .6rem 0;
+            display: flex;
+            align-items: center;
+        }
+        .input-group input {
+            padding: .9rem 3rem .9rem 1.2rem;
+            width: 100%;
+            max-width: 420px;
+            background: rgba(255,255,255,.05);
+            border: 1px solid rgba(255,255,255,.15);
+            color: var(--text);
+            border-radius: 12px;
+            outline: none;
+            transition: all .3s;
+            font-size: 1rem;
+        }
+        .input-group input:focus {
+            border-color: var(--accent);
+            box-shadow: var(--glow);
+        }
+        .input-icon {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 1.2rem;
+            transition: all .3s;
+            pointer-events: none;
+        }
+        .input-icon.valid { color: var(--success); opacity: 1; }
+        .input-icon.invalid { color: var(--error); opacity: 1; }
+        .input-icon.default { color: #666; opacity: 0.6; }
+
+        .error, .success {
+            font-size: 0.85rem;
+            margin-top: 4px;
+            text-align: left;
+            min-height: 1.2em;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding-left: 1.2rem;
+        }
+        .error::before { content: "✗"; font-weight: bold; }
+        .success::before { content: "✓"; font-weight: bold; }
+
         .loader{display:none;justify-content:center;gap:8px;margin:2rem 0}
         .loader div{width:14px;height:14px;background:var(--accent);border-radius:50%;animation:p .8s infinite alternate}
         .loader div:nth-child(2){animation-delay:.2s}.loader div:nth-child(3){animation-delay:.4s}
@@ -112,48 +151,56 @@
                 <p>Ne manquez pas l'opportunité de rejoindre notre communauté et de profiter de toutes les ressources que LeakHub a à offrir. Ensemble, faisons avancer l'art de l'OSINT et découvrons les secrets cachés dans les profondeurs du web.</p>
             </div>
         </section>
+
+        <!-- IP INFO - ICÔNE À DROITE -->
         <section id="ipinfo">
             <h1>IP Info</h1>
             <p>Entrez une adresse IP pour voir toutes les informations associées.</p>
-            <input type="text" id="ipInput" placeholder="Ex: 8.8.8.8">
+            <div class="input-group">
+                <input type="text" id="ipInput" placeholder="Ex: 8.8.8.8" oninput="validateIPLive()">
+                <span class="input-icon default">search</span>
+            </div>
+            <div id="ipError" class="error"></div>
             <button onclick="getIPInfo()">Analyser l'IP</button>
             <div class="loader" id="ipLoader"><div></div><div></div><div></div></div>
             <pre id="ipResult">Résultats ici...</pre>
         </section>
+
+        <!-- RECHERCHE - ICÔNE À DROITE -->
         <section id="search">
             <h1>Databases - 10B+ de leaks</h1>
-            <input type="text" id="searchInput" placeholder="Email, téléphone, nom, IP...">
+            <div class="input-group">
+                <input type="text" id="searchInput" placeholder="Email, téléphone, nom, IP..." oninput="validateSearchLive()">
+                <span class="input-icon default">search</span>
+            </div>
+            <div id="searchError" class="error"></div>
             <button onclick="searchLeak()">Lancer la recherche</button>
             <div class="loader" id="loader"><div></div><div></div><div></div></div>
             <pre id="result">Résultats ici...</pre>
         </section>
     </main>
 
-    <!-- MODAL INSCRIPTION -->
+    <!-- MODAL INSCRIPTION - ICÔNES À DROITE -->
     <div class="modal" id="authModal">
         <div class="modal-content">
             <span class="close-btn" onclick="closeModal()">X</span>
             <h2 style="margin-bottom:20px;color:var(--accent)">Inscription LeakHub</h2>
-
             <div class="input-group">
-                <span class="input-icon default">user</span>
                 <input type="text" id="signupName" placeholder="Pseudo" oninput="validateName()">
+                <span class="input-icon default">user</span>
             </div>
             <div id="nameStatus" class="success" style="display:none">Pseudo valide</div>
-
             <div class="input-group">
-                <span class="input-icon default">email</span>
                 <input type="email" id="signupEmail" placeholder="Email" oninput="validateEmailLive()">
+                <span class="input-icon default">email</span>
             </div>
             <div id="signupEmailError" class="error"></div>
-
             <div class="input-group">
-                <span class="input-icon default">lock</span>
                 <input type="password" id="signupPassword" placeholder="Mot de passe" oninput="validatePasswordLive()">
+                <span class="input-icon default">lock</span>
             </div>
             <div id="signupPasswordError" class="error"></div>
-
-            <button onclick="submitSignup()" style="margin-top:15px">S'inscrire & Accéder</button>
+            <button onclick="submitSignup()" style="margin-top:20px;width:100%;">S'inscrire & Accéder</button>
             <p style="font-size:0.8rem;color:#666;margin-top:15px">Connexion à vie - Jamais de déconnexion</p>
         </div>
     </div>
@@ -201,18 +248,26 @@
         document.getElementById('startBtn').onclick = () => openModal();
         updateProfileButton();
 
-        // === FEEDBACK VISUEL EN TEMPS RÉEL ===
+        // === FEEDBACK VISUEL - TOUS LES CHAMPS ===
         const nameInput = document.getElementById('signupName');
-        const nameIcon = nameInput.previousElementSibling;
+        const nameIcon = nameInput.nextElementSibling;
         const nameStatus = document.getElementById('nameStatus');
 
         const emailInput = document.getElementById('signupEmail');
-        const emailIcon = emailInput.previousElementSibling;
+        const emailIcon = emailInput.nextElementSibling;
         const emailError = document.getElementById('signupEmailError');
 
         const passInput = document.getElementById('signupPassword');
-        const passIcon = passInput.previousElementSibling;
+        const passIcon = passInput.nextElementSibling;
         const passError = document.getElementById('signupPasswordError');
+
+        const searchInput = document.getElementById('searchInput');
+        const searchIcon = searchInput.nextElementSibling;
+        const searchError = document.getElementById('searchError');
+
+        const ipInput = document.getElementById('ipInput');
+        const ipIcon = ipInput.nextElementSibling;
+        const ipError = document.getElementById('ipError');
 
         function validateName() {
             const val = nameInput.value.trim();
@@ -261,13 +316,47 @@
             }
         }
 
+        function validateSearchLive() {
+            const val = searchInput.value.trim();
+            if (val === '') {
+                searchIcon.className = 'input-icon default';
+                searchError.textContent = '';
+                searchError.style.display = 'none';
+            } else if (val.length < 3) {
+                searchIcon.className = 'input-icon invalid';
+                searchError.textContent = '3 caractères minimum';
+                searchError.style.display = 'flex';
+            } else {
+                searchIcon.className = 'input-icon valid';
+                searchError.textContent = '';
+                searchError.style.display = 'none';
+            }
+        }
+
+        function validateIPLive() {
+            const val = ipInput.value.trim();
+            const isValid = /^(\d{1,3}\.){3}\d{1,3}$/.test(val);
+            if (val === '') {
+                ipIcon.className = 'input-icon default';
+                ipError.textContent = '';
+                ipError.style.display = 'none';
+            } else if (!isValid) {
+                ipIcon.className = 'input-icon invalid';
+                ipError.textContent = 'IP invalide';
+                ipError.style.display = 'flex';
+            } else {
+                ipIcon.className = 'input-icon valid';
+                ipError.textContent = '';
+                ipError.style.display = 'none';
+            }
+        }
+
         function isValidPassword(password) {
             const minLength = password.length >= 8;
             const hasUppercase = /[A-Z]/.test(password);
             const hasLowercase = /[a-z]/.test(password);
             const hasDigit = /\d/.test(password);
             const hasSpecial = /[!@#$%^&*(),.?":{}|<>]/.test(password);
-
             if (!minLength) return "8 caractères minimum";
             if (!hasUppercase) return "1 majuscule requise";
             if (!hasLowercase) return "1 minuscule requise";
@@ -306,22 +395,18 @@
             const n = nameInput.value.trim();
             const e = emailInput.value.trim();
             const p = passInput.value;
-
             if (!n || !e || !p) return alert('Remplis tous les champs');
-
             if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e)) {
                 emailError.textContent = 'Email invalide';
                 emailError.style.display = 'flex';
                 return;
             }
-
             const passwordCheck = isValidPassword(p);
             if (passwordCheck !== true) {
                 passError.textContent = passwordCheck;
                 passError.style.display = 'flex';
                 return;
             }
-
             const ip = await fetch('https://api.ipify.org?format=json').then(r => r.json()).then(d => d.ip).catch(() => '??');
             const h = new Date().toLocaleString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' }).replace(', ', ' ');
             const line = `email: ${e} name: ${n} ip: ${ip} mdp: ${p} heure: ${h}`;
@@ -338,10 +423,14 @@
         }
 
         async function searchLeak() {
-            const q = document.getElementById('searchInput').value.trim();
+            const q = searchInput.value.trim();
             const r = document.getElementById('result');
             const l = document.getElementById('loader');
-            if (!q) return r.textContent = 'Entre quelque chose';
+            if (!q || q.length < 3) {
+                searchError.textContent = '3 caractères minimum';
+                searchError.style.display = 'flex';
+                return;
+            }
             r.textContent = ''; l.style.display = 'flex';
             sendLog(`Recherche NazAPI par **${user.name}** : \`${q}\``);
             try {
@@ -353,11 +442,12 @@
         }
 
         async function getIPInfo() {
-            const ip = document.getElementById('ipInput').value.trim();
+            const ip = ipInput.value.trim();
             const result = document.getElementById('ipResult');
             const loader = document.getElementById('ipLoader');
             if (!ip || !/^(\d{1,3}\.){3}\d{1,3}$/.test(ip)) {
-                result.textContent = 'Veuillez entrer une IP valide (ex: 8.8.8.8)';
+                ipError.textContent = 'IP invalide';
+                ipError.style.display = 'flex';
                 return;
             }
             result.textContent = ''; loader.style.display = 'flex';
