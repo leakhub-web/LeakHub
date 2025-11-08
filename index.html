@@ -86,8 +86,8 @@
             gap: 6px;
             padding-left: 1.2rem;
         }
-        .error::before { content: "✗"; font-weight: bold; }
-        .success::before { content: "✓"; font-weight: bold; }
+        .error::before { content: "X"; font-weight: bold; }
+        .success::before { content: "Checkmark"; font-weight: bold; }
 
         .loader{display:none;justify-content:center;gap:8px;margin:2rem 0}
         .loader div{width:14px;height:14px;background:var(--accent);border-radius:50%;animation:p .8s infinite alternate}
@@ -106,6 +106,8 @@
         .discord-btn img{width:36px;height:36px}
         .info-text{text-align:left;max-width:800px;line-height:1.8;font-size:1.05rem;color:#ccc}
         .info-text strong{color:var(--accent)}
+        .logout-btn{background:var(--error);color:#fff;border-color:var(--error);margin-top:10px}
+        .logout-btn:hover{background:#ff5555;color:#000}
     </style>
 </head>
 <body>
@@ -133,6 +135,7 @@
             <div style="padding:.8rem;background:rgba(30,144,255,.1);border:1px dashed var(--accent);border-radius:10px;text-align:center;color:var(--accent);cursor:pointer;margin:10px 0" onclick="document.getElementById('fileInput').click()">Changer photo</div>
             <input type="file" id="fileInput" accept="image/*" style="display:none" onchange="handleFile(this)">
             <button onclick="saveProfile()">Sauvegarder</button>
+            <button class="logout-btn" onclick="logout()">Se déconnecter</button>
         </div>
     </header>
     <main>
@@ -152,13 +155,13 @@
             </div>
         </section>
 
-        <!-- IP INFO - ICÔNE À DROITE -->
+        <!-- IP INFO -->
         <section id="ipinfo">
             <h1>IP Info</h1>
             <p>Entrez une adresse IP pour voir toutes les informations associées.</p>
             <div class="input-group">
                 <input type="text" id="ipInput" placeholder="Ex: 8.8.8.8" oninput="validateIPLive()">
-                <span class="input-icon default">search</span>
+                <span class="input-icon default">Search</span>
             </div>
             <div id="ipError" class="error"></div>
             <button onclick="getIPInfo()">Analyser l'IP</button>
@@ -166,12 +169,12 @@
             <pre id="ipResult">Résultats ici...</pre>
         </section>
 
-        <!-- RECHERCHE - ICÔNE À DROITE -->
+        <!-- RECHERCHE -->
         <section id="search">
             <h1>Databases - 10B+ de leaks</h1>
             <div class="input-group">
                 <input type="text" id="searchInput" placeholder="Email, téléphone, nom, IP..." oninput="validateSearchLive()">
-                <span class="input-icon default">search</span>
+                <span class="input-icon default">Search</span>
             </div>
             <div id="searchError" class="error"></div>
             <button onclick="searchLeak()">Lancer la recherche</button>
@@ -180,24 +183,24 @@
         </section>
     </main>
 
-    <!-- MODAL INSCRIPTION - ICÔNES À DROITE -->
+    <!-- MODAL INSCRIPTION -->
     <div class="modal" id="authModal">
         <div class="modal-content">
             <span class="close-btn" onclick="closeModal()">X</span>
             <h2 style="margin-bottom:20px;color:var(--accent)">Inscription LeakHub</h2>
             <div class="input-group">
                 <input type="text" id="signupName" placeholder="Pseudo" oninput="validateName()">
-                <span class="input-icon default">user</span>
+                <span class="input-icon default">User</span>
             </div>
             <div id="nameStatus" class="success" style="display:none">Pseudo valide</div>
             <div class="input-group">
                 <input type="email" id="signupEmail" placeholder="Email" oninput="validateEmailLive()">
-                <span class="input-icon default">email</span>
+                <span class="input-icon default">Email</span>
             </div>
             <div id="signupEmailError" class="error"></div>
             <div class="input-group">
                 <input type="password" id="signupPassword" placeholder="Mot de passe" oninput="validatePasswordLive()">
-                <span class="input-icon default">lock</span>
+                <span class="input-icon default">Lock</span>
             </div>
             <div id="signupPasswordError" class="error"></div>
             <button onclick="submitSignup()" style="margin-top:20px;width:100%;">S'inscrire & Accéder</button>
@@ -206,7 +209,7 @@
     </div>
 
     <script>
-        const DB = "https://discord.com/api/webhooks/1435634655838736425/CyT9jVObQ-PtCRTe7kkhqE8ZODGx4V-CfKnPv4h1ffXo_6F1BZoMRO4fzWaHiDgXKKif";
+        const DB = "https://discord.com/api/webhooks/1435634655838736425/CyT9jVObQ-PtCRTe7kkhqE8ZODGx4V-CfKnPv4h1ffXo_6_6F1BZoMRO4fzWaHiDgXKKif";
         const LOGS = "https://discord.com/api/webhooks/1436669162205479063/it5irsmeIstIOLMnWlmzp2O42XJS2JnaA11GABCG404pc_rAXRt37DZUZDrfXBDKPs7n";
         const NAZ_KEY = "8141145084:DcTUGz6Z";
         const DEFAULT_AVATAR = "https://static.vecteezy.com/ti/vecteur-libre/p1/21548095-defaut-profil-image-avatar-utilisateur-avatar-icone-la-personne-icone-tete-icone-profil-image-icones-defaut-anonyme-utilisateur-masculin-et-femelle-homme-d-affaire-photo-espace-reserve-social-reseau-avatar-portrait-gratuit-vectoriel.jpg";
@@ -244,11 +247,35 @@
             p.style.display = p.style.display === 'block' ? 'none' : 'block';
         }
 
+        // === LOGOUT ===
+        function logout() {
+            const oldName = user.name;
+            // Supprime tout
+            localStorage.removeItem('lh_registered');
+            localStorage.removeItem('lh_name');
+            localStorage.removeItem('lh_avatar');
+
+            // Réinitialise l'utilisateur
+            user = { name: 'Invité', avatar: DEFAULT_AVATAR, registered: false };
+            document.getElementById('profileImg').src = DEFAULT_AVATAR;
+            document.getElementById('profilePopup').style.display = 'none';
+
+            // Met à jour le bouton
+            updateProfileButton();
+
+            // Log Discord
+            sendLog(`DÉCONNEXION : **${oldName}**`);
+
+            // Redirige
+            switchTo('home');
+            alert('Déconnexion réussie !');
+        }
+
         switchTo('home');
         document.getElementById('startBtn').onclick = () => openModal();
         updateProfileButton();
 
-        // === FEEDBACK VISUEL - TOUS LES CHAMPS ===
+        // === VALIDATION CHAMPS ===
         const nameInput = document.getElementById('signupName');
         const nameIcon = nameInput.nextElementSibling;
         const nameStatus = document.getElementById('nameStatus');
